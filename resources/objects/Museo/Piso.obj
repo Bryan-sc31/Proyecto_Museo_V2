@@ -1,0 +1,32 @@
+# 3ds Max Wavefront OBJ Exporter v0.99 - (c)2007 guruware
+# File Created: 19.11.2023 17:48:44
+
+mtllib Piso.mtl
+
+#
+# object Piso
+#
+
+v  -436.5586 0.5875 389.3631
+v  436.5586 0.5875 389.3631
+v  436.5586 0.5875 -389.3631
+v  -436.5586 0.5875 -389.3631
+# 4 vertices
+
+vn 0.0000 1.0000 -0.0000
+# 1 vertex normals
+
+vt 0.0000 0.0000 0.5000
+vt 8.0000 0.0000 0.5000
+vt 8.0000 8.0000 0.5000
+vt 0.0000 8.0000 0.5000
+# 4 texture coords
+
+o Piso
+g Piso
+usemtl Material__28
+s 2
+f 1/1/1 2/2/1 3/3/1 
+f 3/3/1 4/4/1 1/1/1 
+# 2 faces
+
