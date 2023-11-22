@@ -42,7 +42,7 @@ GLFWmonitor *monitors;
 void getResolution(void);
 
 // camera
-Camera camera(glm::vec3(0.0f, 10.0f, 90.0f));
+Camera camera(glm::vec3(0.0f, 50.0f, 700.0f));
 float MovementSpeed = 0.1f;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -92,10 +92,10 @@ float movDoorL_zAC3 = 0.0f;//Permite el desplazamiento de la puerta de AC3 en z
 float movDoorR_xAC3 = 0.0f;//Permite el desplazamiento de la puerta de AC3 en x
 float movDoorR_zAC3 = 0.0f;//Permite el desplazamiento de la puerta de AC3 en z
 
-//Plataformas F1
+//Variable para movimiento de las plataformas F1
 float orientacionF1 = 0.0f;
 
-// posiciones
+//Variables para movimiento de posiciones de los autos clasicos
 float Desplazamiento = 0.0f;
 float AC1mov_x = 0.0f;
 float AC1mov_z = 0.0f;
@@ -109,26 +109,23 @@ float	movAuto_x = 0.0f,
 		movAuto_z = 0.0f,
 		movAuto_z2 = 0.0f,
 		orienta = 0.0f;
-bool	animacion = false,
-		recorrido1 = true,
-		recorrido2 = false,
-		recorrido3 = false,
-		recorrido4 = false;
+bool	animacion = false;
 
 
 //Keyframes (Manipulación y dibujo)
 float	posX = 0.0f,
 		posY = 0.0f,
 		posZ = 0.0f,
-		rotRodIzq = 0.0f,
-		giroMonito = 0.0f;
+		giroCarro = 0.0f,
+		rotEjeY = 0.0f;
+		
 float	incX = 0.0f,
 		incY = 0.0f,
 		incZ = 0.0f,
-		rotInc = 0.0f,
-		giroMonitoInc = 0.0f;
+		rotYInc = 0.0f,
+		giroCarroInc = 0.0f;
 
-#define MAX_FRAMES 20
+#define MAX_FRAMES 25
 int i_max_steps = 60;
 int i_curr_steps = 0;
 typedef struct _frame
@@ -137,13 +134,13 @@ typedef struct _frame
 	float posX;		//Variable para PosicionX
 	float posY;		//Variable para PosicionY
 	float posZ;		//Variable para PosicionZ
-	float rotRodIzq;
-	float giroMonito;
+	float rotEjeY;
+	float giroCarro;
 
 }FRAME;
 
 FRAME KeyFrame[MAX_FRAMES];
-int FrameIndex = 0;			//introducir número en caso de tener Key guardados
+int FrameIndex = 23;			//introducir número en caso de tener Key guardados
 bool play = false;
 int playIndex = 0;
 
@@ -151,22 +148,21 @@ void saveFrame(void)
 {
 	//printf("frameindex %d\n", FrameIndex);
 	std::cout << "Frame Index = " << FrameIndex << std::endl;
-	std::cout << "Movimiento de auto x = " << movAuto_x << std::endl;
-	std::cout << "Movimiento de auto z = " << movAuto_z << std::endl;
-	std::cout << "Movimiento de auto x2 = " << movAuto_x2 << std::endl;
-	std::cout << "Movimiento de auto z2 = " << movAuto_z2 << std::endl;
-	std::cout << "Orienta = " << orienta << std::endl;
-	std::cout << "AC1x = " << AC1mov_x << std::endl;
-	std::cout << "AC1z = " << AC1mov_z << std::endl;
-	std::cout << "AC2x = " << AC2mov_x << std::endl;
-	std::cout << "AC2z = " << AC2mov_z << std::endl;
-	
+	std::cout << "Pos X = " << posX << std::endl;
+	std::cout << "Pos Y = " << posY << std::endl;
+	std::cout << "Pos Z = " << posZ << std::endl;
+	std::cout << "giroCarro = " << giroCarro << std::endl;
+	std::cout << "rotEjeY = " << rotEjeY << std::endl;
+	std::cout << "movAutox = " << movAuto_x << std::endl;
+	std::cout << "movAutoz = " << movAuto_z << std::endl;
+	std::cout << "movAutox2 = " << movAuto_x2 << std::endl;
+	std::cout << "orienta = " << orienta << std::endl;
+		
 	KeyFrame[FrameIndex].posX = posX;
 	KeyFrame[FrameIndex].posY = posY;
 	KeyFrame[FrameIndex].posZ = posZ;
-
-	KeyFrame[FrameIndex].rotRodIzq = rotRodIzq;
-	KeyFrame[FrameIndex].giroMonito = giroMonito;
+	KeyFrame[FrameIndex].rotEjeY = rotEjeY;
+	KeyFrame[FrameIndex].giroCarro = giroCarro;
 
 	FrameIndex++;
 }
@@ -176,9 +172,8 @@ void resetElements(void)
 	posX = KeyFrame[0].posX;
 	posY = KeyFrame[0].posY;
 	posZ = KeyFrame[0].posZ;
-
-	rotRodIzq = KeyFrame[0].rotRodIzq;
-	giroMonito = KeyFrame[0].giroMonito;
+	rotEjeY = KeyFrame[0].rotEjeY;
+	giroCarro = KeyFrame[0].giroCarro;
 }
 
 void interpolation(void)
@@ -186,10 +181,8 @@ void interpolation(void)
 	incX = (KeyFrame[playIndex + 1].posX - KeyFrame[playIndex].posX) / i_max_steps;
 	incY = (KeyFrame[playIndex + 1].posY - KeyFrame[playIndex].posY) / i_max_steps;
 	incZ = (KeyFrame[playIndex + 1].posZ - KeyFrame[playIndex].posZ) / i_max_steps;
-
-	rotInc = (KeyFrame[playIndex + 1].rotRodIzq - KeyFrame[playIndex].rotRodIzq) / i_max_steps;
-	giroMonitoInc = (KeyFrame[playIndex + 1].giroMonito - KeyFrame[playIndex].giroMonito) / i_max_steps;
-
+	rotYInc = (KeyFrame[playIndex + 1].rotEjeY - KeyFrame[playIndex].rotEjeY) / i_max_steps;
+	giroCarroInc = (KeyFrame[playIndex + 1].giroCarro - KeyFrame[playIndex].giroCarro) / i_max_steps;
 }
 
 void animate(void)
@@ -219,9 +212,8 @@ void animate(void)
 			posX += incX;
 			posY += incY;
 			posZ += incZ;
-
-			rotRodIzq += rotInc;
-			giroMonito += giroMonitoInc;
+			rotEjeY += rotYInc;
+			giroCarro += giroCarroInc;
 
 			i_curr_steps++;
 		}
@@ -261,8 +253,9 @@ void animate(void)
 			}
 		}
 	}
-
-	//Animaciones de sala de autos clasicos
+	//--------------------------------------------------------------
+	// Animaciones de sala de autos clasicos
+	//--------------------------------------------------------------
 	if (animacionAC1)
 	{
 		OrientaPuertas += 1.0f;
@@ -298,7 +291,9 @@ void animate(void)
 			animacionAC3 = false;
 		}
 	}
-
+	//--------------------------------------------------------------
+	// Final animaciones de sala de autos clasicos
+	//--------------------------------------------------------------
 }
 
 void getResolution()
@@ -329,7 +324,7 @@ int main()
 	monitors = glfwGetPrimaryMonitor();
 	getResolution();
 
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "CGeIHC 20241", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Proyecto Museo - CGeIHC 20241", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -366,12 +361,12 @@ int main()
 
 	vector<std::string> faces
 	{
-		"resources/skybox/right.jpg",
-		"resources/skybox/left.jpg",
-		"resources/skybox/top.jpg",
-		"resources/skybox/bottom.jpg",
-		"resources/skybox/front.jpg",
-		"resources/skybox/back.jpg"
+		"resources/skybox/right2.jpg",
+		"resources/skybox/left2.jpg",
+		"resources/skybox/top2.jpg",
+		"resources/skybox/bottom2.jpg",
+		"resources/skybox/front2.jpg",
+		"resources/skybox/back2.jpg"
 	};
 
 	Skybox skybox = Skybox(faces);
@@ -384,7 +379,7 @@ int main()
 	// -------------------------------------------------------------------------------------------------------------------------
 	// Carga de modelos
 	// -------------------------------------------------------------------------------------------------------------------------
-	Model piso("resources/objects/piso/piso.obj");
+	Model piso("resources/objects/piso/piso2.obj");
 		
 	Model MuseoPiso("resources/objects/Museo/Piso.obj");
 	Model MuseoFrente("resources/objects/Museo/Frente.obj");
@@ -396,21 +391,16 @@ int main()
 	Model MuseoRAC("resources/objects/Museo/RoomAC.obj");
 	Model MuseoRAF1("resources/objects/Museo/RoomAF1.obj");
 	Model MuseoRAM("resources/objects/Museo/RoomAM.obj");
-	
 	Model Plataforma("resources/objects/Plataforma/Plataforma.obj");
-	Model Pista("resources/objects/Pista/Pista2.obj");
-
-	/*
-	Model botaDer("resources/objects/Personaje/bota.obj");
-	Model piernaDer("resources/objects/Personaje/piernader.obj");
-	Model piernaIzq("resources/objects/Personaje/piernader.obj");
-	Model torso("resources/objects/Personaje/torso.obj");
-	Model brazoDer("resources/objects/Personaje/brazoder.obj");
-	Model brazoIzq("resources/objects/Personaje/brazoizq.obj");
-	Model cabeza("resources/objects/Personaje/cabeza.obj");
-	Model carro("resources/objects/lambo/carroceria.obj");
-	Model llanta("resources/objects/lambo/Wheel.obj");
-	*/
+	
+	Model PistaCircular("resources/objects/PistaCircular/PistaCircular.obj");
+	Model PistaCompleja("resources/objects/PistaCompleja/PistaCompleja.obj");
+	
+	//Visitantes 
+	ModelAnim josh("resources/objects/visitanteJosh/visitanteJosh.dae");
+	josh.initShaders(animShader.ID);
+	ModelAnim megan("resources/objects/visitanteMegan/visitanteMegan.dae");
+	megan.initShaders(animShader.ID);
 	
 	//Autos clasicos
 	Model AC1("resources/objects/AutosClasicos/33HotRod/Body.obj");
@@ -419,14 +409,12 @@ int main()
 	Model AC1Hood("resources/objects/AutosClasicos/33HotRod/Hood.obj");
 	Model AC1WheelFL("resources/objects/AutosClasicos/33HotRod/WheelFL.obj");
 	Model AC1WheelRL("resources/objects/AutosClasicos/33HotRod/WheelRL.obj");
-
 	Model AC2("resources/objects/AutosClasicos/80S/Body.obj");
 	Model AC2DoorFL("resources/objects/AutosClasicos/80S/DoorFL.obj");
 	Model AC2DoorFR("resources/objects/AutosClasicos/80S/DoorFR.obj");
 	Model AC2DoorRL("resources/objects/AutosClasicos/80S/DoorRL.obj");
 	Model AC2DoorRR("resources/objects/AutosClasicos/80S/DoorRR.obj");
 	Model AC2Wheel("resources/objects/AutosClasicos/80S/Wheel.obj");
-	
 	Model AC3("resources/objects/AutosClasicos/SportCar57/Body.obj");
 	Model AC3DoorL("resources/objects/AutosClasicos/SportCar57/DoorL.obj");
 	Model AC3DoorR("resources/objects/AutosClasicos/SportCar57/DoorR.obj");
@@ -438,45 +426,174 @@ int main()
 	Model AF1("resources/objects/AutosF1/Generic/Body.obj");
 	Model AF1WheelFR("resources/objects/AutosF1/Generic/Wheel_FR.obj");
 	Model AF1WheelRR("resources/objects/AutosF1/Generic/Wheel_RR.obj");
-	
 	Model AF2("resources/objects/AutosF1/Red-bull/Body.obj");
 	Model AF2WheelFR("resources/objects/AutosF1/Red-bull/Wheel_FR.obj");
 	Model AF2WheelRR("resources/objects/AutosF1/Red-bull/Wheel_RR.obj");
-
 	Model AF3("resources/objects/AutosF1/Renault/Body.obj");
 	
 	//Autos modernos
 	Model AM1("resources/objects/AutosModernos/FordGT/Body.obj");
 	Model AM1WheelFR("resources/objects/AutosModernos/FordGT/Wheel_FR.obj");
 	Model AM1WheelRR("resources/objects/AutosModernos/FordGT/Wheel_RR.obj");
-
 	Model AM2("resources/objects/AutosModernos/Koenigs/Koenigs.obj");
 	Model AM2Wheel("resources/objects/AutosModernos/Koenigs/WheelKoenig.obj");
-	
 	Model AM3("resources/objects/AutosModernos/Speciale95/Body.obj");
 	Model AM3WheelL("resources/objects/AutosModernos/Speciale95/Wheel_L.obj");
 	
-	
-	//Model cubo("resources/objects/cubo/cube02.obj");
-	/*
-	//Carga de modelos animados 
-	ModelAnim josh("resources/objects/visitanteJosh/visitanteJosh.dae");
-	josh.initShaders(animShader.ID);
-	ModelAnim megan("resources/objects/visitanteMegan/visitanteMegan.dae");
-	megan.initShaders(animShader.ID);
-	*/
+	// -------------------------------------------------------------------------------------------------------------------------
+	// Precarga de animaciones por KeyFrames
+	// -------------------------------------------------------------------------------------------------------------------------
+
 	//Inicialización de KeyFrames
 	for (int i = 0; i < MAX_FRAMES; i++)
 	{
 		KeyFrame[i].posX = 0;
 		KeyFrame[i].posY = 0;
 		KeyFrame[i].posZ = 0;
-		KeyFrame[i].rotRodIzq = 0;
-		KeyFrame[i].giroMonito = 0;
+		KeyFrame[i].rotEjeY = 0;
+		KeyFrame[i].giroCarro = 0;
 	}
+	
+	KeyFrame[0].posX = 0.0f;
+	KeyFrame[0].posY = 0.0f;
+	KeyFrame[0].posZ = 0.0f;
+	KeyFrame[0].giroCarro = 0.0f;
+	KeyFrame[0].rotEjeY = 0.0f;
 
-	// draw in wireframe
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	KeyFrame[1].posX = 69.0f;
+	KeyFrame[1].posY = 0.0f;
+	KeyFrame[1].posZ = -12.0f;
+	KeyFrame[1].giroCarro = 13.0f;
+	KeyFrame[1].rotEjeY = 7.0f;
+	
+	KeyFrame[2].posX = 127.0f;
+	KeyFrame[2].posY = 0.0f;
+	KeyFrame[2].posZ = -55.0f;
+	KeyFrame[2].giroCarro = 41.0f;
+	KeyFrame[2].rotEjeY = -1.0f;
+
+	KeyFrame[3].posX = 220.0f;
+	KeyFrame[3].posY = 0.0f;
+	KeyFrame[3].posZ = -113.0f;
+	KeyFrame[3].giroCarro = 41.0f;
+	KeyFrame[3].rotEjeY = -1.0f;
+
+	KeyFrame[4].posX = 393.0f;
+	KeyFrame[4].posY = 16.0f;
+	KeyFrame[4].posZ = -160.0f;
+	KeyFrame[4].giroCarro = 10.0f;
+	KeyFrame[4].rotEjeY = -5.0f;
+		
+	KeyFrame[5].posX = 465.0f;
+	KeyFrame[5].posY = 26.0f;
+	KeyFrame[5].posZ = -142.0f;
+	KeyFrame[5].giroCarro = 10.0f;
+	KeyFrame[5].rotEjeY = -5.0f;
+
+	KeyFrame[6].posX = 597.0f;
+	KeyFrame[6].posY = 58.0f;
+	KeyFrame[6].posZ = -86.0f;
+	KeyFrame[6].giroCarro = -24.0f;
+	KeyFrame[6].rotEjeY = 2.0f;
+	
+	KeyFrame[7].posX = 705.002f;
+	KeyFrame[7].posY = 52.9999f;
+	KeyFrame[7].posZ = -8.00008f;
+	KeyFrame[7].giroCarro = -44.0f;
+	KeyFrame[7].rotEjeY = 2.0f;
+	
+	KeyFrame[8].posX = 851.002f;
+	KeyFrame[8].posY = 0.999928f;
+	KeyFrame[8].posZ = -10.0001f;
+	KeyFrame[8].giroCarro = 11.0f;
+	KeyFrame[8].rotEjeY = 2.0f;
+
+	KeyFrame[9].posX = 915.002f;
+	KeyFrame[9].posY = -1.00007f;
+	KeyFrame[9].posZ = -47.0001f;
+	KeyFrame[9].giroCarro = 65.0f;
+	KeyFrame[9].rotEjeY = 10.0f;
+
+	KeyFrame[10].posX = 970.002f;
+	KeyFrame[10].posY = -1.00007f;
+	KeyFrame[10].posZ = -129.0f;
+	KeyFrame[10].giroCarro = 86.0f;
+	KeyFrame[10].rotEjeY = 10.0f;
+
+	KeyFrame[11].posX = 937.002f;
+	KeyFrame[11].posY = -1.00007f;
+	KeyFrame[11].posZ = -309.0f;
+	KeyFrame[11].giroCarro = 148.0f;
+	KeyFrame[11].rotEjeY = 10.0f;
+
+	KeyFrame[12].posX = 727.002f;
+	KeyFrame[12].posY = 1.99993f;
+	KeyFrame[12].posZ = -422.0f;
+	KeyFrame[12].giroCarro = 168.0f;
+	KeyFrame[12].rotEjeY = 2.0f;
+
+	KeyFrame[13].posX = 605.002f;
+	KeyFrame[13].posY = 22.9999f;
+	KeyFrame[13].posZ = -424.0f;
+	KeyFrame[13].giroCarro = 168.0f;
+	KeyFrame[13].rotEjeY = 12.0f;
+
+	KeyFrame[14].posX = 375.002f;
+	KeyFrame[14].posY = 58.9999f;
+	KeyFrame[14].posZ = -311.0f;
+	KeyFrame[14].giroCarro = 214.0f;
+	KeyFrame[14].rotEjeY = 2.0f;
+	
+	KeyFrame[15].posX = 160.002f;
+	KeyFrame[15].posY = -7.24792e-05f;
+	KeyFrame[15].posZ = -299.0f;
+	KeyFrame[15].giroCarro = 147.0f;
+	KeyFrame[15].rotEjeY = 2.0f;
+	
+	KeyFrame[16].posX = 86.0016f;
+	KeyFrame[16].posY = -7.24792e-05f;
+	KeyFrame[16].posZ = -354.0f;
+	KeyFrame[16].giroCarro = 148.0f;
+	KeyFrame[16].rotEjeY = 7.0f;
+
+	KeyFrame[17].posX = 26.0069f;
+	KeyFrame[17].posY = -0.000250578f;
+	KeyFrame[17].posZ = -367.998f;
+	KeyFrame[17].giroCarro = 206.999f;
+	KeyFrame[17].rotEjeY = 7.00001f;
+
+	KeyFrame[18].posX = -146.993f;
+	KeyFrame[18].posY = -0.000250578f;
+	KeyFrame[18].posZ = -309.998f;
+	KeyFrame[18].giroCarro = 272.999f;
+	KeyFrame[18].rotEjeY = -3.99999f;
+
+	KeyFrame[19].posX = -202.993f;
+	KeyFrame[19].posY = -0.000250578f;
+	KeyFrame[19].posZ = -178.998f;
+	KeyFrame[19].giroCarro = 308.999f;
+	KeyFrame[19].rotEjeY = -2.99999f;
+
+	KeyFrame[20].posX = -184.993f;
+	KeyFrame[20].posY = -0.000250578f;
+	KeyFrame[20].posZ = -104.998f;
+	KeyFrame[20].giroCarro = 319.999f;
+	KeyFrame[20].rotEjeY = -0.999992f;
+
+	KeyFrame[21].posX = -107.993f;
+	KeyFrame[21].posY = -0.000250578f;
+	KeyFrame[21].posZ = -20.9984f;
+	KeyFrame[21].giroCarro = 334.999f;
+	KeyFrame[21].rotEjeY = 3.00001f;
+
+	KeyFrame[22].posX = -11.9931f;
+	KeyFrame[22].posY = -0.000250578f;
+	KeyFrame[22].posZ = 4.00159f;
+	KeyFrame[22].giroCarro = 360.999f;
+	KeyFrame[22].rotEjeY = 3.00001f;
+	// -------------------------------------------------------------------------------------------------------------------------
+	// Fin de precarga de animaciones por KeyFrames
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	// render loop
 	// -----------
@@ -523,16 +640,16 @@ int main()
 		staticShader.setFloat("pointLight[1].linear", 0.009f);
 		staticShader.setFloat("pointLight[1].quadratic", 0.032f);
 
-		staticShader.setVec3("spotLight[0].position", glm::vec3(0.0f, 10.0f, 180.0f));
+		staticShader.setVec3("spotLight[0].position", glm::vec3(-230.0f, 20.0f, 180.0f));
 		staticShader.setVec3("spotLight[0].direction", glm::vec3(0.0f, -1.0f, 0.0f));
 		staticShader.setVec3("spotLight[0].ambient", glm::vec3(0.0f, 0.0f, 0.0f));
 		staticShader.setVec3("spotLight[0].diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
 		staticShader.setVec3("spotLight[0].specular", glm::vec3(0.0f, 0.0f, 0.0f));
-		staticShader.setFloat("spotLight[0].cutOff", glm::cos(glm::radians(10.0f)));
-		staticShader.setFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(60.0f)));
+		staticShader.setFloat("spotLight[0].cutOff", glm::cos(glm::radians(20.0f)));
+		staticShader.setFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(90.0f)));
 		staticShader.setFloat("spotLight[0].constant", 1.0f);
-		staticShader.setFloat("spotLight[0].linear", 0.0009f);
-		staticShader.setFloat("spotLight[0].quadratic", 0.0005f);
+		staticShader.setFloat("spotLight[0].linear", 0.0014f);
+		staticShader.setFloat("spotLight[0].quadratic", 0.000007f);
 
 		staticShader.setFloat("material_shininess", 32.0f);
 
@@ -543,7 +660,6 @@ int main()
 		glm::mat4 view = camera.GetViewMatrix();
 		staticShader.setMat4("projection", projection);
 		staticShader.setMat4("view", view);
-
 
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Personajes Animacion
@@ -560,21 +676,21 @@ int main()
 		animShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		animShader.setVec3("light.direction", lightDirection);
 		animShader.setVec3("viewPos", camera.Position);
-		/*
+		
 		// Primer personaje Animacion
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(-40.3f, 1.75f, 0.3f));
-		model = glm::scale(model, glm::vec3(0.1f));
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-420.0f, 1.75f, -610.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.15f));
 		animShader.setMat4("model", model);
 		josh.Draw(animShader);
 
 		// Segundo personaje Animacion
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(40.3f, 1.75f, 0.3f));
-		model = glm::scale(model, glm::vec3(0.1f));
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-440.0f, 1.75f, -610.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.15f));
 		animShader.setMat4("model", model);
 		megan.Draw(animShader);
-		*/
+		
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Escenario
 		// -------------------------------------------------------------------------------------------------------------------------
@@ -584,7 +700,7 @@ int main()
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.2f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.35f));
 		staticShader.setMat4("model", model);
 		piso.Draw(staticShader);
 		
@@ -652,7 +768,6 @@ int main()
 		model = glm::scale(model, glm::vec3(1.0f));
 		staticShader.setMat4("model", model);
 		MuseoRAM.Draw(staticShader);
-		
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Fin de la estructura de museo
 		// -------------------------------------------------------------------------------------------------------------------------
@@ -660,14 +775,14 @@ int main()
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Cuarto carros clasicos
 		// -------------------------------------------------------------------------------------------------------------------------
-		
-		AC1mov_x = 50.0f * sin(Desplazamiento + 15.0f);
-		AC1mov_z = 50.0f * cos(Desplazamiento + 15.0f);
-		AC2mov_x = 50.0f * sin(Desplazamiento + 30.0f);
-		AC2mov_z = 50.0f * cos(Desplazamiento + 30.0f);
-		AC3mov_x = 50.0f * sin(Desplazamiento + 45.0f);
-		AC3mov_z = 50.0f * cos(Desplazamiento + 45.0f);
-		
+		//Funcion de comportamiento de desplazamiento de los autos clasicos
+		AC1mov_x = 90.0f * sin(Desplazamiento + 0.0f);
+		AC1mov_z = 90.0f * cos(Desplazamiento + 0.0f);
+		AC2mov_x = 90.0f * sin(Desplazamiento + 90.0f);
+		AC2mov_z = 90.0f * cos(Desplazamiento + 90.0f);
+		AC3mov_x = 90.0f * sin(Desplazamiento + 180.0f);
+		AC3mov_z = 90.0f * cos(Desplazamiento + 180.0f);
+
 		//HotRod
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 		model = glm::translate(model, glm::vec3(-90.0f + AC1mov_x, 0.0f, -245.0f + AC1mov_z));
@@ -817,15 +932,20 @@ int main()
 		model = glm::scale(model, glm::vec3(0.6f));
 		staticShader.setMat4("model", model);
 		AC3WheelRR.Draw(staticShader);//Trasera izquierda
-		
+
+		//Pista
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-86.0f, 2.0f, -261.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 2.0f, 4.0f));
+		staticShader.setMat4("model", model);
+		staticShader.setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		PistaCircular.Draw(staticShader);
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Fin cuarto carros Clasicos
 		// -------------------------------------------------------------------------------------------------------------------------
-
+		
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Cuarto carros F1
 		// -------------------------------------------------------------------------------------------------------------------------
-		
 		//Plataforma Generic
 		model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, glm::vec3(308.0f, 0.0f, 186.0f));
@@ -889,17 +1009,14 @@ int main()
 		model = glm::scale(model, glm::vec3(0.9f));
 		staticShader.setMat4("model", model);
 		AF3.Draw(staticShader);
-		
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Fin cuarto carros F1
 		// -------------------------------------------------------------------------------------------------------------------------
-
+		
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Cuarto carros Modernos
 		// -------------------------------------------------------------------------------------------------------------------------
-		
-		//Plataforma para exponer autos
-		//Plataforma 1
+		//Plataforma FordGT
 		model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, glm::vec3(-230.0f, -150.0f+movPlataforma1_y, 180.0f));
 		tmp = model = glm::rotate(model, glm::radians(orientacion1), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -936,7 +1053,7 @@ int main()
 		staticShader.setMat4("model", model);
 		AM1WheelFR.Draw(staticShader);//Trasera izquierda
 					
-		//Plataforma 2
+		//Plataforma Koenigs
 		model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, glm::vec3(-380.0f, -150.0f + movPlataforma1_y, 230.0f));
 		tmp = model = glm::rotate(model, glm::radians(orientacion2), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -973,7 +1090,7 @@ int main()
 		staticShader.setMat4("model", model);
 		AM2Wheel.Draw(staticShader);//Izquierda trasera
 
-		//Plataforma 3
+		//Plataforma Speciale95
 		model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, glm::vec3(-380.0f, -150.0f + movPlataforma1_y, 40.0f));
 		tmp = model = glm::rotate(model, glm::radians(orientacion3), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -1009,122 +1126,98 @@ int main()
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		staticShader.setMat4("model", model);
 		AM3WheelL.Draw(staticShader);//Trasera izquierda
-
-		//Pista
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 70.0f));
-		model = glm::scale(model, glm::vec3(6.0f,1.0f,6.0f));
-		staticShader.setMat4("model", model);
-		staticShader.setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-		//Pista.Draw(staticShader);
-		
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Fin cuarto carros Modernos
 		// -------------------------------------------------------------------------------------------------------------------------
 
-		/*
-		model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(15.0f + movAuto_x, -1.0f, movAuto_z));
-		tmp = model = glm::rotate(model, glm::radians(orienta), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		staticShader.setVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
+		// -------------------------------------------------------------------------------------------------------------------------
+		// Pista de carreras
+		// -------------------------------------------------------------------------------------------------------------------------
+		//Pista
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 2.0f, -760.0f));
+		model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0));
+		model = glm::scale(model, glm::vec3(9.0f, 5.0f, 9.0f));
 		staticShader.setMat4("model", model);
-		carro.Draw(staticShader);
-
-		model = glm::translate(tmp, glm::vec3(8.5f, 2.5f, 12.9f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		staticShader.setMat4("model", model);
-		llanta.Draw(staticShader);	//Izq delantera
-
-		model = glm::translate(tmp, glm::vec3(-8.5f, 2.5f, 12.9f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		staticShader.setMat4("model", model);
-		llanta.Draw(staticShader);	//Der delantera
-
-		model = glm::translate(tmp, glm::vec3(-8.5f, 2.5f, -14.5f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		staticShader.setMat4("model", model);
-		llanta.Draw(staticShader);	//Der trasera
-
-		model = glm::translate(tmp, glm::vec3(8.5f, 2.5f, -14.5f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		staticShader.setMat4("model", model);
-		llanta.Draw(staticShader);	//Izq trase
-		*/
+		staticShader.setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		PistaCompleja.Draw(staticShader);
 		
-		// -------------------------------------------------------------------------------------------------------------------------
-		// Personaje
-		// -------------------------------------------------------------------------------------------------------------------------
-		/*
+		//Auto1
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-		model = glm::translate(model, glm::vec3(posX, posY, posZ));
-		tmp = model = glm::rotate(model, glm::radians(giroMonito), glm::vec3(0.0f, 1.0f, 0.0));
+		model = glm::translate(model, glm::vec3(-390.0f+posX, 2.0f+posY, -574.0f+posZ));
+		tmp = model = glm::rotate(model, glm::radians(90.0f+ giroCarro), glm::vec3(0.0f, 1.0f, 0.0));
+		model = glm::scale(model, glm::vec3(0.6f));
 		staticShader.setMat4("model", model);
-		torso.Draw(staticShader);
+		AM1.Draw(staticShader);
 
-		//Pierna Der
-		model = glm::translate(tmp, glm::vec3(-0.5f, 0.0f, -0.1f));
+		model = glm::translate(tmp, glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0));
-		model = glm::rotate(model, glm::radians(-rotRodIzq), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rotEjeY), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6f));
 		staticShader.setMat4("model", model);
-		piernaDer.Draw(staticShader);
+		AM1WheelFR.Draw(staticShader);
 
-		//Pie Der
-		model = glm::translate(model, glm::vec3(0, -0.9f, -0.2f));
+		model = glm::translate(tmp, glm::vec3(-1.0f, 0.0f, -2.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rotEjeY), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6f));
 		staticShader.setMat4("model", model);
-		botaDer.Draw(staticShader);
+		AM1WheelRR.Draw(staticShader);//Delantera izquierda
 
-		//Pierna Izq
-		model = glm::translate(tmp, glm::vec3(0.5f, 0.0f, -0.1f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(tmp, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6f));
 		staticShader.setMat4("model", model);
-		piernaIzq.Draw(staticShader);
+		AM1WheelRR.Draw(staticShader);//Trasera drecha
 
-		//Pie Iz
-		model = glm::translate(model, glm::vec3(0, -0.9f, -0.2f));
+		model = glm::translate(tmp, glm::vec3(-1.0f, 0.0f, -2.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6f));
 		staticShader.setMat4("model", model);
-		botaDer.Draw(staticShader);	//Izq trase
+		AM1WheelFR.Draw(staticShader);//Trasera izquierda
 
-		//Brazo derecho
-		model = glm::translate(tmp, glm::vec3(0.0f, -1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(-0.75f, 2.5f, 0));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//Auto 2
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+		model = glm::translate(model, glm::vec3(-450.0f + posX, 2.0f + posY, -574.0f + +posZ));
+		tmp = model = glm::rotate(model, glm::radians(90.0f + giroCarro), glm::vec3(0.0f, 1.0f, 0.0));
+		model = glm::scale(model, glm::vec3(1.5f));
 		staticShader.setMat4("model", model);
-		brazoDer.Draw(staticShader);
+		AM2.Draw(staticShader);
 
-		//Brazo izquierdo
-		model = glm::translate(tmp, glm::vec3(0.0f, -1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(0.75f, 2.5f, 0));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		staticShader.setMat4("model", model);
-		brazoIzq.Draw(staticShader);
-
-		//Cabeza
-		model = glm::translate(tmp, glm::vec3(0.0f, -1.0f, 0.0f));
+		model = glm::translate(tmp, glm::vec3(-0.75f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0));
-		model = glm::translate(model, glm::vec3(0.0f, 2.5f, 0));
+		model = glm::rotate(model, glm::radians(rotEjeY), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.5f));
 		staticShader.setMat4("model", model);
-		cabeza.Draw(staticShader);
-		*/
+		AM2Wheel.Draw(staticShader);//Derecha delantera
 
-		// -------------------------------------------------------------------------------------------------------------------------
-		// Caja Transparente --- Siguiente Práctica
-		// -------------------------------------------------------------------------------------------------------------------------
-		/*glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(5.0f));
+		model = glm::translate(tmp, glm::vec3(0.0f, 0.0f, 33.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rotEjeY), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.5f));
 		staticShader.setMat4("model", model);
-		cubo.Draw(staticShader);
-		glEnable(GL_BLEND);*/
+		AM2Wheel.Draw(staticShader);//Izquierda delantera
+
+		model = glm::translate(tmp, glm::vec3(-0.75f, 0.0f, -33.75f));
+		model = glm::scale(model, glm::vec3(1.5f));
+		staticShader.setMat4("model", model);
+		AM2Wheel.Draw(staticShader);//Derecha trasera
+
+		model = glm::translate(tmp, glm::vec3(0.0f, 0.0f, -0.75f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.5f));
+		staticShader.setMat4("model", model);
+		AM2Wheel.Draw(staticShader);//Izquierda trasera
+		// -------------------------------------------------------------------------------------------------------------------------
+		// Fin pista carreras
+		// -------------------------------------------------------------------------------------------------------------------------
+				
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Termina Escenario
 		// -------------------------------------------------------------------------------------------------------------------------
 
 		//-------------------------------------------------------------------------------------
 		// draw skybox as last
-		// -------------------
+		//-------------------------------------------------------------------------------------
 		skyboxShader.use();
 		skybox.Draw(skyboxShader, view, projection, camera);
 
@@ -1162,29 +1255,12 @@ void my_input(GLFWwindow *window, int key, int scancode, int action, int mode)
 		camera.ProcessKeyboard(LEFT, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, (float)deltaTime);
-	//To Configure Model
-	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-		posZ++;
-	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-		posZ--;
-	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-		posX--;
-	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-		posX++;
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-		rotRodIzq--;
-	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-		rotRodIzq++;
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-		giroMonito--;
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-		giroMonito++;
+	
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 		lightPosition.x++;
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
 		lightPosition.x--;
 
-		
 	//Inicia la animacion de la sala de autos modernos
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
 	{
@@ -1208,7 +1284,7 @@ void my_input(GLFWwindow *window, int key, int scancode, int action, int mode)
 		animacionAC1 ^= true;
 	}
 	
-	//Reinicia la animacion para abrir AC1
+	//Reinicia la animacion de AC1
 	if (key == GLFW_KEY_4 && action == GLFW_PRESS)
 	{
 		OrientaPuertas = 0.0f;
@@ -1222,7 +1298,7 @@ void my_input(GLFWwindow *window, int key, int scancode, int action, int mode)
 		animacionAC2 ^= true;
 	}
 	
-	//Reinicia la animacion para abrir AC2
+	//Reinicia la animacion de AC2
 	if (key == GLFW_KEY_6 && action == GLFW_PRESS)
 	{
 		OrientaPuertasAC2 = 0.0f;
@@ -1239,7 +1315,7 @@ void my_input(GLFWwindow *window, int key, int scancode, int action, int mode)
 		animacionAC3 ^= true;
 	}
 
-	//Reinicia la animacion para abrir AC3
+	//Reinicia la animacion de AC3
 	if (key == GLFW_KEY_8 && action == GLFW_PRESS)
 	{
 		OrientaPuertasAC3 = 0.0f;//Permite el giro de las puertas delanteras de AC3
@@ -1250,39 +1326,13 @@ void my_input(GLFWwindow *window, int key, int scancode, int action, int mode)
 		animacionAC3 = false;
 	}
 
+	//Permiten el desplazamiento de los carros la sala de autos clasicos 
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		Desplazamiento += 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 		Desplazamiento -= 1.0f;
 	
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-		movAuto_x += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-		movAuto_x -= 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-		movAuto_z += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-		movAuto_z -= 1.0f;
-	/*
-	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		movAuto_x2 += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
-		movAuto_x2 -= 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
-		movAuto_z2 += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
-		movAuto_z2 -= 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-		movAuto_x += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-		movAuto_x -= 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-		movAuto_z += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-		movAuto_z -= 1.0f;
-	*/
-	
-	//To play KeyFrame animation 
+	//Inicia la animacion por KeyFrame de la carrera
 	if (key == GLFW_KEY_P && action == GLFW_PRESS)
 	{
 		if (play == false && (FrameIndex > 1))
